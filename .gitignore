@@ -1,0 +1,21 @@
+# Node modules
+node_modules/
+
+artifacts/
+cache/
+gas-report.txt
+
+# Logs
+logs/
+*.log
+
+# Build output
+dist/
+build/
+
+# Dependency directories
+.pnp/
+.yarn/
+
+# Environment variables
+.env
