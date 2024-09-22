@@ -84,7 +84,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     }
 
     /*
-     * This is the function that the Chainlink Keeper nodes call
+     * This is the function that the Chainlink Keeper nodes call regularly
      * they look for the 'upkeepNeeded' to return true.
      * The following should be true in order to return true.
      * 1. Our time interval should have passed.
@@ -102,6 +102,7 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
         upkeepNeeded = isOpen && timePassed && hasPlayers && hasBalance;
     }
 
+    // ChainLink Keeper will call this function when upkeepNeeded is true
     function performUpkeep(bytes calldata /* performData */) external override {
         // request the random number
         // once we get it, do something with it
