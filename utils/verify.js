@@ -15,3 +15,4 @@ const verify = async (constructorAddress, args) => {
     }
   }
 }
+module.exports = { verify } 

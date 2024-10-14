@@ -38,6 +38,12 @@ module.exports = {
       },
     ],
   },
+  etherscan: {
+    apiKey: {
+      sepolia: ETHERSCAN_API_KEY
+    },
+    customChains: [],
+  },
   gasReporter: {
     enabled: true,
     currency: "USD",
@@ -52,6 +58,6 @@ module.exports = {
     }
   },
   mocha: {
-    timeout: 300000
+    timeout: 500000
   }
 }

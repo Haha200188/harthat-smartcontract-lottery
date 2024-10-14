@@ -12,22 +12,18 @@ const networkConfig = {
     subscriptionId: "588",
     gasLane: "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c", // 30 gwei
     keepersUpdateInterval: "30",
-    entranceFee: ethers.utils.parseEther("0.01", 18), // 0.01 ETH
+    entranceFee: ethers.utils.parseEther("0.01"), // 0.01 ETH
     callbackGasLimit: "500000", // 500,000 gas
   },
   11155111: {
     name: "sepolia",
-    subscriptionId: "6926",
+    subscriptionId: "25042614374107387025496813343468079042690514645577550946831427042350350187483",
     gasLane: "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c", // 30 gwei
     keepersUpdateInterval: "30",
-    entranceFee: ethers.utils.parseEther("0.01", 18), // 0.01 ETH
-    callbackGasLimit: "500000", // 500,000 gas
+    entranceFee: ethers.utils.parseEther("0.01"), // 0.01 ETH
+    callbackGasLimit: "200000", // 200,000 gas
     vrfCoordinatorV2: "0x447Fd5eC2D383091C22B8549cb231a3bAD6d3fAf",
-  },
-  1: {
-    name: "mainnet",
-    keepersUpdateInterval: "30",
-  },
+  }
 }
 
 const developmentChains = ["hardhat", "localhost"]

@@ -6,10 +6,9 @@ pragma solidity >=0.4.22 <0.9.0;
 // winner to be selected every X minutes -> completly automate
 // chainlink oracle -> randomness, automated execution (chainlink keepers)
 
-import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import "@chainlink/contracts/src/v0.8/automation/interfaces/KeeperCompatibleInterface.sol";
-
 error Raffle_notEnoughETHEntered();
 error Raffle_transferFailed();
 error Raffle_notOpen();
@@ -22,7 +21,7 @@ error Raffle_UpkeepNoNeeded(uint256 currentBalance, uint256 numplayers, uint256 
  * @dev This implements the Chainlink VRF Version 2
  */
 
-contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
+contract Raffle is VRFConsumerBaseV2Plus, KeeperCompatibleInterface {
     /* Type Declarations */
     enum RaffleState {
         OPEN,
@@ -30,11 +29,13 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
     }
 
     /* State Variables */
+
+    // No need to declare a coordinator variable in VRF V2.5
+    // Use the `s_vrfCoordinator` from VRFConsumerBaseV2Plus.sol
     uint256 private immutable i_entranceFee;
     address payable[] private s_players;
-    VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
     bytes32 private immutable i_keyhash; // the maximum gas price you are willing to pay for a request in wei
-    uint64 private immutable i_subscriptionId;
+    uint256 private immutable i_subscriptionId;
     uint32 private immutable i_callbackGasLimit;
     uint16 constant REQUEST_CONFIRMATIONS = 3;
     uint32 constant NUM_WORDS = 1;
@@ -52,14 +53,13 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 
     /* Functions */
     constructor(
-        address vrfCoordinatorV2,
-        uint64 subscriptionId,
+        address vrfCoordinatorV2Plus,
+        uint256 subscriptionId,
         uint256 entranceFee,
         bytes32 keyhash, // gasLane
         uint32 callbackGasLimit,
         uint256 interval
-    ) VRFConsumerBaseV2(vrfCoordinatorV2) {
-        i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
+    ) VRFConsumerBaseV2Plus(vrfCoordinatorV2Plus) {
         i_subscriptionId = subscriptionId;
         i_entranceFee = entranceFee;
         i_keyhash = keyhash;
@@ -117,19 +117,26 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
             );
         }
         s_raffleState = RaffleState.CALCULATING;
-        uint256 requestId = i_vrfCoordinator.requestRandomWords(
-            i_keyhash,
-            i_subscriptionId,
-            REQUEST_CONFIRMATIONS,
-            i_callbackGasLimit,
-            NUM_WORDS
+
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: i_keyhash,
+                subId: i_subscriptionId,
+                requestConfirmations: REQUEST_CONFIRMATIONS,
+                callbackGasLimit: i_callbackGasLimit,
+                numWords: NUM_WORDS,
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false}) // use LINK instead of ETH
+                )
+            })
         );
+
         emit RequestedRaffleWinner(requestId);
     }
 
     function fulfillRandomWords(
         uint256 /*requestId*/,
-        uint256[] memory randomWords
+        uint256[] calldata randomWords
     ) internal override {
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable recentWinner = s_players[indexOfWinner];

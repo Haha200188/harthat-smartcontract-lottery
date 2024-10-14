@@ -5,13 +5,13 @@ const { assert, expect } = require("chai")
 !developmentChains.includes(network.name)
   ? describe.skip
   : describe("Raffle Unit Tests", async function () {
-    let raffle, vrfCoordinatorV2Mock, deployer, raffleEntranceFee, interval
+    let raffle, vrfCoordinatorV2_5Mock, deployer, raffleEntranceFee, interval
     const chainId = network.config.chainId
     beforeEach(async function () {
       deployer = (await getNamedAccounts()).deployer
       await deployments.fixture(["all"])
       raffle = await ethers.getContract("Raffle", deployer)
-      vrfCoordinatorV2Mock = await ethers.getContract("VRFCoordinatorV2Mock", deployer)
+      vrfCoordinatorV2_5Mock = await ethers.getContract("VRFCoordinatorV2_5Mock", deployer)
       raffleEntranceFee = await raffle.getEntranceFee()
       interval = await raffle.getInterval()
     })
@@ -117,10 +117,10 @@ const { assert, expect } = require("chai")
       })
       it("can only be called after performupkeep", async function () {
         await expect(
-          vrfCoordinatorV2Mock.fulfillRandomWords(0, raffle.address)
+          vrfCoordinatorV2_5Mock.fulfillRandomWords(0, raffle.address)
         ).to.be.revertedWith("nonexistent request")
         await expect(
-          vrfCoordinatorV2Mock.fulfillRandomWords(1, raffle.address)
+          vrfCoordinatorV2_5Mock.fulfillRandomWords(1, raffle.address)
         ).to.be.revertedWith("nonexistent request")
       })
       it("picks a winner, resets, and sends money", async function () {
@@ -163,7 +163,7 @@ const { assert, expect } = require("chai")
             for (i = 0; i < startingIndex + additionalEntrances; i++) {
               startingBalance[i] = await accounts[i].getBalance()
             }
-            await vrfCoordinatorV2Mock.fulfillRandomWords(
+            await vrfCoordinatorV2_5Mock.fulfillRandomWords(
               txReceipt.events[1].args.requestId, raffle.address
             )
           } catch (e) {
